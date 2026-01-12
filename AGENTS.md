@@ -1,195 +1,61 @@
-# AGENTS.md
+## Project Name
+Agent Tools
 
-## Project Execution Playbook
+## Vision
+Create a unified, modular repository that stores and manages top-level agents and reusable skills designed for multi-model AI ecosystems, including Claude Code, OpenAI Codex, and Google Gemini. The repository will serve as a foundational toolkit for orchestrating agent behaviors, composable reasoning skills, and shared capabilities across various AI frameworks.
 
-This document defines **how Claude Code should build this project**, how work is delegated across subagents, and how progress is verified.
+## Non-Goals
+- Not focused on front-end interfaces or visualization layers.
+- Not responsible for deployment pipelines or hosting.
+- Not intended to manage API tokens or credentials for specific models.
 
-Source of truth for requirements: **PROJECT_SPECS.md**  
-Repo-wide governing rules: **CLAUDE.md**
+## Functional Requirements
+- Define a standard folder structure for organizing agents and skills.
+- Provide an agent registration and discovery system.
+- Support versioned skill definitions reusable across agents.
+- Offer model-specific compatibility layers (Claude, Codex, Gemini).
+- Include clear documentation templates for each agent/skill.
+- Provide tests to verify agent-skill interoperability.
 
----
+## Non-Functional Requirements
+- The repository should be easily extensible for future AI model integrations.
+- Must be compatible with Python-based agent frameworks (LangChain, LlamaIndex, etc.).
+- Ensure consistent naming and schema across agents.
+- All modules must be type-checked (mypy or pyright).
+- High test coverage (>=90%).
 
-## 1. Execution Mandate
+## Constraints
+- Python 3.10+
+- No external network calls in core logic.
+- Must run on macOS and Linux.
 
-Claude Code MUST:
+## Architecture Assumptions
+- Each agent is a composable unit with declared dependencies.
+- Skills are atomic functional components.
+- A registry module allows dynamic discovery of available skills.
+- Config files define the mapping between models and compatible skills.
 
-- Read `CLAUDE.md` before any action
-- Read `PROJECT_SPECS.md` as the source of truth
-- Generate all required **subagents**
-- Generate all required **skills**
-- Scaffold all required **tooling and CI**
-- Use any required MCP (Model Checking Protocol) to verify the project
-- Use any required LSP (Language Server Protocol) to provide code completion and other features
-- Ensure best practices are followed
-- Ensure latest versions possible of dependencies are used, adapt to full compatibility
-- Create a .gitignore file with any files and folders that should be ignored by git in the root of the project
-- Iterate until the project is **fully working, warning-free, and fully tested**
+## Quality Bars
+- Full test suite with mock integration tests for each model type.
+- Documentation auto-generated from docstrings.
+- Linting: flake8 + black.
+- CI pipeline runs lint, test, and type-check jobs.
 
-Partial completion is not acceptable.
+## Configurability
+- YAML-based configuration for defining agents, dependencies, and skills.
+- Environment-variable overrides for model-specific options.
 
----
+## Observability & Debugging
+- Built-in logging (structured JSON logging recommended).
+- Debug mode enables verbose tracing of agent execution.
+- Each agent should expose health and diagnostic methods.
 
-## 2. Project Overview
+## Future Phases
+- Phase 2: Add plugin interface for third-party agent skills.
+- Phase 3: Introduce UI dashboard for agent management.
+- Phase 4: Extend support to other LLMs (Mistral, Anthropic’s next-gen models).
 
-This project is built from `PROJECT_SPECS.md`. Claude Code is expected to transform those specs into a **production-grade system** with:
-
-- Clean architecture
-- Deterministic builds
-- Exhaustive test coverage
-- Zero errors and zero warnings
-
-The primary goal is **correctness and reliability**, not speed alone.
-
----
-
-## 3. Non-Goals / Explicitly Out of Scope
-
-Unless explicitly stated in `PROJECT_SPECS.md`, the following are out of scope:
-
-- Premature optimization
-- UI polish beyond functional correctness
-- Legal, licensing, or compliance work
-- Manual workflows where automation is feasible
-
----
-
-## 4. Architecture Principles
-
-The system must follow these principles:
-
-- Clear module boundaries
-- Dependency inversion at boundaries
-- Testability first
-- Deterministic, reproducible builds
-
-Initial conceptual model:
-
-```
-[ Interface ] → [ Application ] → [ Infrastructure ]
-      ↑               |                 |
-   [ Tests ]       [ Domain ]      [ External IO ]
-```
-
----
-
-## 5. Required Commands
-
-Claude Code MUST ensure the following commands exist and run cleanly:
-
-- `format`
-- `lint`
-- `typecheck` (if applicable)
-- `test`
-- `build`
-
-If any are missing:
-- Scaffold minimal tooling (Makefile, package scripts, justfile, etc.)
-- Commands must be real, deterministic, and runnable locally and in CI
-
-All commands must run with **zero warnings**.
-
----
-
-## 6. Milestones & Definition of Done
-
-Claude Code MUST generate milestones based on `PROJECT_SPECS.md`.
-
-Each milestone must include:
-- Deliverables
-- Acceptance criteria
-- Required tests
-- Verification commands
-
-A milestone is **DONE** only when:
-- All acceptance criteria pass
-- Full verification loop is green
-- CI is green
-- No warnings exist
-
----
-
-## 7. Backlog Expectations
-
-Claude Code MUST generate and maintain an ordered backlog.
-
-Each backlog item must:
-- Be small and executable
-- Describe the change
-- Specify the tests that prove it works
-- Be independently verifiable
-
----
-
-## 8. Subagents (REQUIRED)
-
-Claude Code MUST generate the following subagents in `.claude/agents/`:
-
-### planner
-- Converts specs into milestones and backlog
-- Defines acceptance criteria
-
-### architect
-- Defines system boundaries and contracts
-- Prevents architectural drift
-
-### implementer
-- Writes production code
-- Runs the verification loop
-
-### tester
-- Enforces coverage and correctness
-- Writes missing or weak tests
-- Eliminates flaky tests
-
-### reviewer
-- Performs final quality, security, and regression pass
-
----
-
-## 9. Skills (REQUIRED)
-
-Claude Code MUST generate the following skills in `.claude/skills/`:
-
-- `repo-commands` – canonical build/test commands
-- `style-standards` – formatting, naming, conventions
-- `spec-guardrails` – enforces PROJECT_SPECS.md constraints
-- `quality-gate` – enforces CLAUDE.md rules automatically
-
----
-
-## 10. CI Enforcement
-
-Claude Code MUST:
-
-- Scaffold CI (e.g., GitHub Actions) if not present
-- Ensure CI mirrors the local verification loop
-- Fail CI on any error or warning
-- Block merges unless CI is green
-
-CI is part of the definition of done.
-
----
-
-## 11. Assumptions & Open Questions
-
-Claude Code should:
-- Document assumptions explicitly
-- Ask questions only if truly blocking
-
-This section should trend toward empty.
-
----
-
-## 12. Mandatory Execution Order
-
-Claude Code MUST follow this order:
-
-1. Read `CLAUDE.md`
-2. Read `PROJECT_SPECS.md`
-3. Generate subagents
-4. Generate skills
-5. Scaffold tooling and CI
-6. Generate plan (populate milestones and backlog)
-7. Implement incrementally
-8. Verify until green
-9. Stop
+## Open Assumptions
+- Assumes consistent APIs across supported models.
+- Assumes users have separate environments configured per model.
+- Assumes manual deployment and execution by developers at first stage.
