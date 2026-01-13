@@ -1,0 +1,13 @@
+{
+  "name": "apple-shared",
+  "version": "1.0.0",
+  "description": "Shared Apple platform skills for Swift, App Store, and cross-platform development",
+  "author": {
+    "name": "Alejandro Laborda"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["apple", "swift", "ios", "tvos", "visionos", "macos", "app-store"],
+  "components": {
+    "skills": ["skills/"]
+  }
+}

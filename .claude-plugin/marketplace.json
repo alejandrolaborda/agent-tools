@@ -1,0 +1,19 @@
+{
+  "name": "agent-tools",
+  "description": "AI development plugins for Apple platforms",
+  "owner": {
+    "name": "Alejandro Laborda"
+  },
+  "plugins": [
+    {
+      "name": "apple-shared",
+      "source": "./plugins/apple-shared",
+      "description": "Shared Apple platform skills (Swift, App Store, Accessibility)"
+    },
+    {
+      "name": "apple-tv-dev",
+      "source": "./plugins/apple-tv-dev",
+      "description": "Apple TV/tvOS development with specialized agents for games and media apps"
+    }
+  ]
+}

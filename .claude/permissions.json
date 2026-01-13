@@ -1,1 +1,51 @@
-"{\n    \"fs\": {\n        \"read\": [\n            \"./**\"\n        ],\n        \"write\": [\n            \"./**\"\n        ]\n    },\n    \"shell\": {\n        \"allow\": [\n            \"./**\"\n        ],\n        \"ask\": [\n            \"../**\",\n            \"/**\"\n        ]\n    },\n    \"network\": {\n        \"ask\": [\n            \"*\"\n        ]\n    }\n}"
+{
+  "fs": {
+    "read": ["./**"],
+    "write": ["./**"]
+  },
+  "shell": {
+    "allow": [
+      "git *",
+      "ls *",
+      "tree *",
+      "wc *",
+      "cat *",
+      "head *",
+      "tail *",
+      "find *",
+      "grep *",
+      "rg *",
+      "mkdir *",
+      "rm *",
+      "cp *",
+      "mv *",
+      "touch *",
+      "chmod *",
+      "xcodebuild *",
+      "swift *",
+      "swiftc *",
+      "xcrun *",
+      "xcode-select *",
+      "pod *",
+      "carthage *",
+      "mint *",
+      "npm *",
+      "node *",
+      "python3 *",
+      "pip3 *",
+      "brew *",
+      "which *",
+      "echo *",
+      "printf *",
+      "date *",
+      "pwd",
+      "env *",
+      "export *",
+      "source *",
+      ".*"
+    ]
+  },
+  "network": {
+    "allow": ["*"]
+  }
+}
