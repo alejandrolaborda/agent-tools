@@ -282,6 +282,38 @@ skills-ref validate ./skills/*
 skills-ref to-prompt ./skills/my-skill
 ```
 
+## Plugin Versioning Rules
+
+> **CRITICAL**: Bump the semver version in `plugin.json` on EVERY edit to a plugin.
+
+### Why This Matters
+- Users with auto-update enabled only receive changes when the version number increases
+- Without a version bump, changes won't propagate to installed plugins
+
+### When to Bump
+
+| Change Type | Version Bump | Example |
+|-------------|--------------|---------|
+| Bug fix, typo | PATCH | `1.0.0` → `1.0.1` |
+| New skill/agent/command | MINOR | `1.0.1` → `1.1.0` |
+| Breaking changes | MAJOR | `1.1.0` → `2.0.0` |
+
+### Checklist Before Committing Plugin Changes
+
+- [ ] Updated `version` in `.claude-plugin/plugin.json`
+- [ ] Version follows semver format (`MAJOR.MINOR.PATCH`)
+- [ ] Commit message describes what changed
+
+### Example
+
+```json
+{
+  "name": "apple-shared",
+  "version": "1.0.2",  // ← bump this on every edit
+  ...
+}
+```
+
 ## Quality Bars
 - Full test suite with mock integration tests for each model type.
 - Documentation auto-generated from docstrings.

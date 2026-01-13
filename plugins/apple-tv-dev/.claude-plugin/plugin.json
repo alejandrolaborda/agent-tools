@@ -1,6 +1,6 @@
 {
   "name": "apple-tv-dev",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Apple TV/tvOS development plugin with specialized agents for games and media apps. Requires: apple-shared@agent-tools",
   "author": {
     "name": "Alejandro Laborda"

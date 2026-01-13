@@ -1,6 +1,6 @@
 {
   "name": "apple-shared",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shared Apple platform skills for Swift, App Store, and cross-platform development",
   "author": {
     "name": "Alejandro Laborda"
