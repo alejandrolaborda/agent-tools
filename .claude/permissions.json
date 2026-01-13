@@ -4,46 +4,7 @@
     "write": ["./**"]
   },
   "shell": {
-    "allow": [
-      "git *",
-      "ls *",
-      "tree *",
-      "wc *",
-      "cat *",
-      "head *",
-      "tail *",
-      "find *",
-      "grep *",
-      "rg *",
-      "mkdir *",
-      "rm *",
-      "cp *",
-      "mv *",
-      "touch *",
-      "chmod *",
-      "xcodebuild *",
-      "swift *",
-      "swiftc *",
-      "xcrun *",
-      "xcode-select *",
-      "pod *",
-      "carthage *",
-      "mint *",
-      "npm *",
-      "node *",
-      "python3 *",
-      "pip3 *",
-      "brew *",
-      "which *",
-      "echo *",
-      "printf *",
-      "date *",
-      "pwd",
-      "env *",
-      "export *",
-      "source *",
-      ".*"
-    ]
+    "allow": ["*"]
   },
   "network": {
     "allow": ["*"]
