@@ -13,7 +13,7 @@
     {
       "name": "apple-tv-dev",
       "source": "./plugins/apple-tv-dev",
-      "description": "Apple TV/tvOS development with specialized agents for games and media apps"
+      "description": "Apple TV/tvOS development with specialized agents. Requires: apple-shared"
     }
   ]
 }

@@ -7,7 +7,5 @@
   },
   "license": "Apache-2.0",
   "keywords": ["apple", "swift", "ios", "tvos", "visionos", "macos", "app-store"],
-  "components": {
-    "skills": ["skills/"]
-  }
+  "skills": "./skills/"
 }

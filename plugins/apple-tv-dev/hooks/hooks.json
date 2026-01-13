@@ -1,0 +1,10 @@
+{
+  "hooks": [
+    {
+      "event": "SessionStart",
+      "type": "prompt",
+      "matcher": "always",
+      "prompt": "IMPORTANT: The apple-tv-dev plugin requires apple-shared@agent-tools to be installed for full functionality (Swift language skills, App Store guidelines, etc.). If the user encounters missing skills, remind them to install it with: /plugin install apple-shared@agent-tools"
+    }
+  ]
+}

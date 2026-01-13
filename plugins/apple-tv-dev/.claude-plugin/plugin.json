@@ -1,16 +1,14 @@
 {
   "name": "apple-tv-dev",
   "version": "1.0.0",
-  "description": "Apple TV/tvOS development plugin with specialized agents for games and media apps",
+  "description": "Apple TV/tvOS development plugin with specialized agents for games and media apps. Requires: apple-shared@agent-tools",
   "author": {
     "name": "Alejandro Laborda"
   },
   "license": "Apache-2.0",
   "keywords": ["apple", "tvos", "apple-tv", "swiftui", "focus", "games", "media", "streaming"],
-  "components": {
-    "agents": ["agents/"],
-    "skills": ["skills/"],
-    "commands": ["commands/"]
-  },
-  "dependencies": ["apple-shared"]
+  "agents": "./agents/",
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "hooks": "./hooks/"
 }
