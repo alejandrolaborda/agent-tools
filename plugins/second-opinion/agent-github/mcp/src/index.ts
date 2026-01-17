@@ -50,9 +50,15 @@ async function main(): Promise<void> {
   const adapter = new GitHubAdapter();
 
   if (!adapter.isConfigured()) {
-    console.error('Error: GITHUB_TOKEN environment variable is not set');
+    console.error('Error: GitHub authentication not found.');
+    console.error('');
+    console.error('To authenticate, run: gh auth login');
+    console.error('');
+    console.error('This uses OAuth - no API keys needed!');
     process.exit(1);
   }
+
+  console.error(`GitHub auth source: ${adapter.getAuthSource()}`);
 
   const info = adapter.getInfo();
 

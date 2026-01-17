@@ -12,7 +12,7 @@ Query external agents, get answer, act on it.
 | Command | Description |
 |---------|-------------|
 | `/second-opinion` | Get a second opinion on current context |
-| `/second-opinion setup` | Configure which agents to enable |
+| `/second-opinion setup` | Configure agents interactively |
 | `/second-opinion status` | Show current configuration |
 
 ## CRITICAL: Execution Flow
@@ -32,14 +32,12 @@ Query external agents, get answer, act on it.
 If **NONE** of these tools exist, display this message and **STOP immediately**:
 
 ```
-⚠️ No second-opinion agents installed.
+No second-opinion agents available.
 
-Install at least one agent plugin:
-• agent-openai (requires OPENAI_API_KEY)
-• agent-gemini (requires GOOGLE_API_KEY)
-• agent-github (requires GITHUB_TOKEN)
-
-Run `/second-opinion setup` for help.
+Run `/second-opinion setup` to configure authentication:
+- GitHub: Uses OAuth via `gh auth login`
+- OpenAI: Enter API key interactively
+- Gemini: Enter API key interactively
 ```
 
 **Do NOT proceed further if no agents are available.**
@@ -52,11 +50,11 @@ If agents ARE installed, spawn the `opinion-gatherer` agent with:
 - Any relevant context
 
 The agent will:
-1. Output "🔍 Gathering second opinions..."
+1. Output "Gathering second opinions..."
 2. Query each available agent sequentially, showing progress:
-   - "   ├─ Asking OpenAI..."
-   - "   ├─ Asking Gemini..."
-   - "   └─ Asking GitHub..."
+   - "   Asking OpenAI..."
+   - "   Asking Gemini..."
+   - "   Asking GitHub..."
 3. Return aggregated results (including actual model names from responses)
 
 ### Step 3: Analyze and Decide
@@ -64,7 +62,7 @@ The agent will:
 After receiving responses from the opinion-gatherer agent, display:
 
 ```
-📊 Analyzing responses against my proposal...
+Analyzing responses against my proposal...
 ```
 
 Then apply this decision logic:
@@ -112,13 +110,10 @@ Need your input on this one:
 
 ## First-Time Setup
 
-Install agent plugins to enable second opinions:
+Run `/second-opinion setup` to configure agents interactively.
 
-```bash
-# Install from agent-tools marketplace
-/plugin install agent-openai@agent-tools
-/plugin install agent-gemini@agent-tools
-/plugin install agent-github@agent-tools
-```
-
-Each plugin requires its API key as an environment variable.
+| Agent | Auth Method |
+|-------|-------------|
+| GitHub | OAuth via `gh auth login` (no API key needed!) |
+| OpenAI | API key (entered interactively, stored locally) |
+| Gemini | API key (entered interactively, stored locally) |

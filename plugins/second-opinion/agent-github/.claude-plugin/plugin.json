@@ -1,7 +1,7 @@
 {
   "name": "agent-github",
-  "version": "1.2.1",
-  "description": "MCP server that exposes GitHub Models as an agent for second opinions",
+  "version": "1.3.0",
+  "description": "MCP server for GitHub Models second opinions. Uses OAuth via gh CLI - no API key needed!",
   "author": {
     "name": "Alejandro Laborda"
   },

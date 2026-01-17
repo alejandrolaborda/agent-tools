@@ -1,7 +1,16 @@
 /**
  * GitHub Models API Adapter
  * Uses OpenAI-compatible API
+ *
+ * Authentication priority:
+ * 1. GITHUB_TOKEN environment variable
+ * 2. gh CLI auth token (OAuth)
+ * 3. Stored in .claude/second-opinion.json
  */
+
+import { execFileSync } from 'node:child_process';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 export interface QueryParams {
   query: string;
@@ -38,6 +47,10 @@ interface GitHubResponse {
   };
 }
 
+interface LocalConfig {
+  apiKeys?: Record<string, string>;
+}
+
 // GitHub Models supports various models - these are commonly available
 const AVAILABLE_MODELS: ModelInfo[] = [
   { id: 'gpt-4o', name: 'GPT-4o', description: 'OpenAI GPT-4o via GitHub' },
@@ -48,14 +61,77 @@ const AVAILABLE_MODELS: ModelInfo[] = [
   { id: 'Mistral-Large-2411', name: 'Mistral Large', description: 'Mistral AI Large model' },
 ];
 
+/**
+ * Try to get GitHub token from gh CLI (OAuth-based)
+ * Uses execFileSync for safety (no shell injection risk)
+ */
+function getGitHubTokenFromCLI(): string | null {
+  try {
+    const token = execFileSync('gh', ['auth', 'token'], {
+      encoding: 'utf-8',
+      timeout: 5000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    }).trim();
+    return token || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Try to read API key from local config file
+ */
+function getKeyFromLocalConfig(): string | null {
+  const configPaths = [
+    join(process.cwd(), '.claude', 'second-opinion.json'),
+    join(process.env.HOME ?? '', '.claude', 'second-opinion.json'),
+  ];
+
+  for (const configPath of configPaths) {
+    if (existsSync(configPath)) {
+      try {
+        const content = readFileSync(configPath, 'utf-8');
+        const config = JSON.parse(content) as LocalConfig;
+        if (config.apiKeys?.github) {
+          return config.apiKeys.github;
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+  }
+  return null;
+}
+
 export class GitHubAdapter {
   private apiKey: string;
   private endpoint: string;
   private defaultModel: string;
   private timeout: number;
+  private authSource: 'env' | 'gh-cli' | 'config' | 'none';
 
   constructor() {
-    this.apiKey = process.env.GITHUB_TOKEN ?? '';
+    // Resolve API key from multiple sources
+    if (process.env.GITHUB_TOKEN) {
+      this.apiKey = process.env.GITHUB_TOKEN;
+      this.authSource = 'env';
+    } else {
+      const cliToken = getGitHubTokenFromCLI();
+      if (cliToken) {
+        this.apiKey = cliToken;
+        this.authSource = 'gh-cli';
+      } else {
+        const configKey = getKeyFromLocalConfig();
+        if (configKey) {
+          this.apiKey = configKey;
+          this.authSource = 'config';
+        } else {
+          this.apiKey = '';
+          this.authSource = 'none';
+        }
+      }
+    }
+
     this.endpoint = process.env.GITHUB_MODELS_ENDPOINT ?? 'https://models.inference.ai.azure.com';
     this.defaultModel = 'gpt-4o';
     this.timeout = parseInt(process.env.GITHUB_MODELS_TIMEOUT ?? '60000', 10);
@@ -63,6 +139,10 @@ export class GitHubAdapter {
 
   isConfigured(): boolean {
     return !!this.apiKey;
+  }
+
+  getAuthSource(): string {
+    return this.authSource;
   }
 
   getInfo(): { provider: string; model: string } {

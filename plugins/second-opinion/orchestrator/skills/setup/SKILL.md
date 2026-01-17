@@ -1,130 +1,142 @@
 ---
 name: setup
 description: |
-  Configure which AI agents to use for second opinions. Use when user says
+  Configure second-opinion agents interactively. Use when user says
   "setup second opinion", "configure agents", "enable/disable agents",
   "which agents", or wants to change second-opinion settings.
 ---
 
 # Second Opinion Setup
 
-Interactive configuration for second-opinion agents. The user should NEVER need to edit any files manually.
+Interactive configuration for second-opinion agents. **No file editing required.**
+
+## Authentication Methods
+
+| Agent | Auth Method | How to Set Up |
+|-------|-------------|---------------|
+| GitHub | OAuth via gh CLI | Run `gh auth login` in terminal |
+| OpenAI | API Key | Enter interactively below |
+| Gemini | API Key | Enter interactively below |
 
 ## Instructions
 
-Follow these steps exactly:
+### Step 1: Check GitHub Authentication
 
-### Step 1: Detect Available Agent Plugins
+First, check if `gh auth token` returns a token:
 
-Check which agent MCP tools are available by looking for these tools:
-- `mcp__openai__list_models` → OpenAI plugin installed
-- `mcp__gemini__list_models` → Gemini plugin installed
-- `mcp__github__list_models` → GitHub plugin installed
-
-Show what's detected:
-```
-## Detected Agent Plugins
-
-| Agent | Plugin | Status |
-|-------|--------|--------|
-| OpenAI | agent-openai | ✓ installed / ✗ not found |
-| Gemini | agent-gemini | ✓ installed / ✗ not found |
-| GitHub | agent-github | ✓ installed / ✗ not found |
+```bash
+gh auth token 2>/dev/null && echo "authenticated" || echo "not authenticated"
 ```
 
-If NO plugins are detected, tell user to install at least one:
+**If authenticated:** GitHub agent is ready to use (OAuth - no API key needed).
+
+**If not authenticated:** Tell the user:
 ```
-⚠️ No agent plugins detected.
+GitHub uses OAuth authentication.
 
-Install at least one:
-/plugin install agent-openai@agent-tools
-/plugin install agent-gemini@agent-tools
-/plugin install agent-github@agent-tools
-```
+To set up, run this in your terminal:
+  gh auth login
 
-### Step 2: Query Available Models
-
-For each detected agent plugin, call its `list_models` tool:
-- `mcp__openai__list_models`
-- `mcp__gemini__list_models`
-- `mcp__github__list_models`
-
-Each returns JSON with:
-```json
-{
-  "provider": "openai",
-  "models": [
-    {"id": "gpt-4o", "name": "GPT-4o", "description": "Most capable"},
-    {"id": "gpt-4o-mini", "name": "GPT-4o Mini", "description": "Fast and cheap"}
-  ],
-  "default": "gpt-4o"
-}
+Then restart Claude Code.
 ```
 
-### Step 3: Let User Select Models
+### Step 2: Check for Existing API Keys
 
-For each available agent, use AskUserQuestion to let user pick a model:
+Read `.claude/second-opinion.json` if it exists to see what's already configured.
+
+Display current status:
+```
+## Current Configuration
+
+| Agent | Status |
+|-------|--------|
+| GitHub | ✓ authenticated via gh CLI |
+| OpenAI | ✗ not configured |
+| Gemini | ✗ not configured |
+```
+
+### Step 3: Prompt for Missing API Keys
+
+For each agent WITHOUT a configured key, use AskUserQuestion:
 
 ```json
 {
   "questions": [{
-    "question": "Which OpenAI model do you want to use?",
+    "question": "Would you like to configure OpenAI?",
     "header": "OpenAI",
     "multiSelect": false,
     "options": [
-      {"label": "GPT-4o (Recommended)", "description": "Most capable, best for complex reasoning"},
-      {"label": "GPT-4o Mini", "description": "Fast and cost-effective"},
-      {"label": "o1", "description": "Advanced reasoning model"}
+      {"label": "Yes, enter API key", "description": "I have an OpenAI API key ready"},
+      {"label": "Skip for now", "description": "I'll configure this later"}
     ]
   }]
 }
 ```
 
-**Note:** Build the options dynamically from the `list_models` response. Mark the default as "(Recommended)".
+**If user selects "Yes, enter API key":**
+
+Use AskUserQuestion with a text input option:
+```json
+{
+  "questions": [{
+    "question": "Enter your OpenAI API key (starts with sk-):",
+    "header": "API Key",
+    "multiSelect": false,
+    "options": [
+      {"label": "I'll paste it", "description": "The API key will be stored locally in .claude/second-opinion.json"}
+    ]
+  }]
+}
+```
+
+When the user provides the key via "Other" input, save it to the config file.
 
 ### Step 4: Save Configuration
 
-Create `.claude/second-opinion.json` with the selected models:
+Write the API keys to `.claude/second-opinion.json`:
 
 ```json
 {
-  "models": {
-    "openai": "gpt-4o",
-    "gemini": "gemini-2.0-flash",
-    "github": "gpt-4o"
+  "apiKeys": {
+    "openai": "sk-...",
+    "gemini": "AI..."
   },
-  "updatedAt": "2026-01-16T12:00:00Z"
+  "updatedAt": "2026-01-17T12:00:00Z"
 }
 ```
+
+Use the Write tool to create/update this file.
 
 ### Step 5: Show Confirmation
 
 ```
-## Configuration Saved
+## Configuration Complete
 
-**File:** .claude/second-opinion.json
+| Agent | Status | Auth Source |
+|-------|--------|-------------|
+| GitHub | ✓ ready | gh CLI (OAuth) |
+| OpenAI | ✓ ready | stored locally |
+| Gemini | ✗ skipped | - |
 
-### Selected Models
+**Config file:** .claude/second-opinion.json
 
-| Agent | Model |
-|-------|-------|
-| OpenAI | gpt-4o |
-| Gemini | gemini-2.0-flash |
-| GitHub | gpt-4o |
+### Next Steps
 
-### Note
+- Use `/second-opinion` to get second opinions
+- Run `/second-opinion setup` again to reconfigure
+- GitHub auth: run `gh auth login` in terminal
 
-- Models can be changed anytime by running `/second-opinion setup`
-- API keys are read from environment variables (set in your shell profile)
-- GitHub token auto-detected from `gh auth token` if available
+### Security Note
+
+API keys are stored locally in your project's `.claude/` directory.
+Add `.claude/second-opinion.json` to `.gitignore` to avoid committing keys.
 ```
 
-## Important Notes
+## Important Rules
 
-- NEVER ask user to edit files manually
-- NEVER hardcode model lists - always query from `list_models` tool
-- Use AskUserQuestion for ALL user input
-- Build model options dynamically from what each agent reports
-- Mark the default model as "(Recommended)" in the options
-- Store only model selections (not API keys) in the config file
-- API keys come from environment variables, not stored in config
+1. **NEVER ask users to edit files manually**
+2. **NEVER ask users to set environment variables**
+3. **Use AskUserQuestion for ALL user input**
+4. **GitHub uses OAuth via `gh auth login` - no API key needed**
+5. **Store API keys in `.claude/second-opinion.json` using Write tool**
+6. **Add reminder about .gitignore for security**

@@ -14,45 +14,48 @@ Show current configuration and agent status.
 
 When invoked:
 
-1. **Read the local config** from `.claude/second-opinion.json` if it exists
-2. **Check environment variables** for `SECOND_OPINION_HOST` and `ENABLED_AGENTS`
-3. **Check API key availability** for each agent:
-   - Stored in local config
-   - Environment variable
-   - GitHub CLI (`gh auth token`)
-4. **Display status** in this format:
+1. **Check GitHub CLI authentication:**
+   ```bash
+   gh auth token 2>/dev/null && echo "authenticated" || echo "not authenticated"
+   ```
+
+2. **Read the local config** from `.claude/second-opinion.json` if it exists
+
+3. **Display status** in this format:
 
 ```
 ## Second Opinion Configuration
 
-**Config source:** local | env | default
 **Config file:** .claude/second-opinion.json
 
 ### Agent Status
 
-| Agent | Enabled | API Key |
-|-------|---------|---------|
-| openai | ✓ | ✓ stored in config |
-| anthropic | ✗ (excluded - host agent) | - |
-| gemini | ✓ | ✓ stored in config |
-| github | ✓ | ✓ auto-detected from gh CLI |
+| Agent | Status | Auth Source |
+|-------|--------|-------------|
+| GitHub | ✓ ready | gh CLI (OAuth) |
+| OpenAI | ✓ ready | stored locally |
+| Gemini | ✗ not configured | - |
+| Anthropic | ✗ excluded | host agent |
 
 ### Host Exclusion
 
 Host: claude-code
-Excluded agent: anthropic
+Excluded agent: anthropic (you can't ask yourself for a second opinion)
 
-### To Change
+### To Configure
 
-Run `/second-opinion setup` to reconfigure agents.
+Run `/second-opinion setup` to add or update API keys interactively.
 ```
 
-## Key Detection Priority
+## Auth Detection Priority
 
 For each agent, check in this order:
-1. **Environment variable** (highest priority)
-2. **Stored in local config** (`.claude/second-opinion.json`)
-3. **GitHub CLI** (for github agent only, via `gh auth token`)
+
+| Agent | Priority |
+|-------|----------|
+| GitHub | gh CLI token (OAuth) → stored in config |
+| OpenAI | stored in config |
+| Gemini | stored in config |
 
 ## Config File Format
 
@@ -60,18 +63,21 @@ The config file at `.claude/second-opinion.json`:
 
 ```json
 {
-  "enabledAgents": ["openai", "gemini", "github"],
   "apiKeys": {
     "openai": "sk-...",
     "gemini": "AI..."
   },
-  "updatedAt": "2024-01-16T12:00:00Z"
+  "models": {
+    "openai": "gpt-4o",
+    "gemini": "gemini-2.0-flash"
+  },
+  "updatedAt": "2026-01-17T12:00:00Z"
 }
 ```
 
-## Fallback Behavior
+## Status Icons
 
-If no local config exists:
-- Check `ENABLED_AGENTS` env var (comma-separated)
-- If not set, all agents are enabled by default
-- API keys are checked from environment variables only
+| Icon | Meaning |
+|------|---------|
+| ✓ | Agent is configured and ready |
+| ✗ | Agent is not configured or excluded |

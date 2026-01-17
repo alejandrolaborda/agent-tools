@@ -1,6 +1,13 @@
 /**
  * OpenAI API Adapter
+ *
+ * Authentication priority:
+ * 1. OPENAI_API_KEY environment variable
+ * 2. Stored in .claude/second-opinion.json
  */
+
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 export interface QueryParams {
   query: string;
@@ -37,6 +44,10 @@ interface OpenAIResponse {
   };
 }
 
+interface LocalConfig {
+  apiKeys?: Record<string, string>;
+}
+
 // Recommended models for second opinions
 const AVAILABLE_MODELS: ModelInfo[] = [
   { id: 'gpt-4o', name: 'GPT-4o', description: 'Most capable, best for complex reasoning' },
@@ -46,14 +57,54 @@ const AVAILABLE_MODELS: ModelInfo[] = [
   { id: 'o1-mini', name: 'o1 Mini', description: 'Faster reasoning model' },
 ];
 
+/**
+ * Try to read API key from local config file
+ */
+function getKeyFromLocalConfig(): string | null {
+  const configPaths = [
+    join(process.cwd(), '.claude', 'second-opinion.json'),
+    join(process.env.HOME ?? '', '.claude', 'second-opinion.json'),
+  ];
+
+  for (const configPath of configPaths) {
+    if (existsSync(configPath)) {
+      try {
+        const content = readFileSync(configPath, 'utf-8');
+        const config = JSON.parse(content) as LocalConfig;
+        if (config.apiKeys?.openai) {
+          return config.apiKeys.openai;
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+  }
+  return null;
+}
+
 export class OpenAIAdapter {
   private apiKey: string;
   private endpoint: string;
   private defaultModel: string;
   private timeout: number;
+  private authSource: 'env' | 'config' | 'none';
 
   constructor() {
-    this.apiKey = process.env.OPENAI_API_KEY ?? '';
+    // Resolve API key from multiple sources
+    if (process.env.OPENAI_API_KEY) {
+      this.apiKey = process.env.OPENAI_API_KEY;
+      this.authSource = 'env';
+    } else {
+      const configKey = getKeyFromLocalConfig();
+      if (configKey) {
+        this.apiKey = configKey;
+        this.authSource = 'config';
+      } else {
+        this.apiKey = '';
+        this.authSource = 'none';
+      }
+    }
+
     this.endpoint = process.env.OPENAI_ENDPOINT ?? 'https://api.openai.com/v1';
     this.defaultModel = 'gpt-4o';
     this.timeout = parseInt(process.env.OPENAI_TIMEOUT ?? '60000', 10);
@@ -61,6 +112,10 @@ export class OpenAIAdapter {
 
   isConfigured(): boolean {
     return !!this.apiKey;
+  }
+
+  getAuthSource(): string {
+    return this.authSource;
   }
 
   getInfo(): { provider: string; model: string } {

@@ -1,7 +1,7 @@
 {
   "name": "second-opinion",
-  "version": "1.6.1",
-  "description": "Get second opinions from external AI agents (OpenAI, Gemini, GitHub). Orchestrates multiple AI providers for consensus-based decision making.",
+  "version": "1.7.0",
+  "description": "Get second opinions from external AI agents (OpenAI, Gemini, GitHub). Features OAuth for GitHub (via gh CLI) and interactive API key setup - no manual file editing required.",
   "author": {
     "name": "Alejandro Laborda"
   },

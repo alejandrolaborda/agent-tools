@@ -50,9 +50,13 @@ async function main(): Promise<void> {
   const adapter = new OpenAIAdapter();
 
   if (!adapter.isConfigured()) {
-    console.error('Error: OPENAI_API_KEY environment variable is not set');
+    console.error('Error: OpenAI API key not found.');
+    console.error('');
+    console.error('Run /second-opinion setup to configure interactively.');
     process.exit(1);
   }
+
+  console.error(`OpenAI auth source: ${adapter.getAuthSource()}`);
 
   const info = adapter.getInfo();
 

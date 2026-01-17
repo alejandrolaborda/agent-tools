@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { getAvailableAgentIds } from './agent-registry.js';
 
 // ============================================================================
@@ -135,13 +135,15 @@ export function getConfigFilePath(): string {
 // ============================================================================
 
 /**
- * Try to get GitHub token from gh CLI
+ * Try to get GitHub token from gh CLI (OAuth-based)
+ * Uses execFileSync for safety (no shell injection risk)
  */
 export function getGitHubTokenFromCLI(): string | null {
   try {
-    const token = execSync('gh auth token 2>/dev/null', {
+    const token = execFileSync('gh', ['auth', 'token'], {
       encoding: 'utf-8',
       timeout: 5000,
+      stdio: ['pipe', 'pipe', 'pipe'],
     }).trim();
     return token || null;
   } catch {
@@ -154,7 +156,10 @@ export function getGitHubTokenFromCLI(): string | null {
  */
 export function isGitHubCLIAvailable(): boolean {
   try {
-    execSync('which gh 2>/dev/null', { encoding: 'utf-8' });
+    execFileSync('which', ['gh'], {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
     return true;
   } catch {
     return false;
@@ -166,8 +171,14 @@ export function isGitHubCLIAvailable(): boolean {
 // ============================================================================
 
 /**
- * Get API keys for agents, merging stored keys with environment variables
- * Priority: Environment variable > Stored config > GitHub CLI (for github agent)
+ * Get API keys for agents from multiple sources
+ *
+ * Priority for GitHub: gh CLI (OAuth) > Stored config > Environment variable
+ * Priority for others: Stored config > Environment variable
+ *
+ * This prioritizes OAuth for GitHub since it's more user-friendly,
+ * and prioritizes stored config for others since we want interactive
+ * setup to take precedence over environment variables.
  */
 export function getApiKeysForAgents(agents: string[]): Record<string, string> {
   const localConfig = readLocalConfig();
@@ -178,26 +189,42 @@ export function getApiKeysForAgents(agents: string[]): Record<string, string> {
     const envVar = AGENT_KEY_ENV_VARS[agent];
     if (!envVar) continue;
 
-    // Priority 1: Environment variable
-    const envValue = process.env[envVar];
-    if (envValue) {
-      keys[envVar] = envValue;
+    // Special handling for GitHub: prefer OAuth via gh CLI
+    if (agent === 'github') {
+      // Priority 1: GitHub CLI (OAuth - most user-friendly)
+      const cliToken = getGitHubTokenFromCLI();
+      if (cliToken) {
+        keys[envVar] = cliToken;
+        continue;
+      }
+
+      // Priority 2: Stored in local config
+      const storedValue = storedKeys[agent];
+      if (storedValue) {
+        keys[envVar] = storedValue;
+        continue;
+      }
+
+      // Priority 3: Environment variable
+      const envValue = process.env[envVar];
+      if (envValue) {
+        keys[envVar] = envValue;
+      }
       continue;
     }
 
-    // Priority 2: Stored in local config
+    // For other agents: prefer stored config over env var
+    // Priority 1: Stored in local config (from interactive setup)
     const storedValue = storedKeys[agent];
     if (storedValue) {
       keys[envVar] = storedValue;
       continue;
     }
 
-    // Priority 3: GitHub CLI for github agent
-    if (agent === 'github') {
-      const cliToken = getGitHubTokenFromCLI();
-      if (cliToken) {
-        keys[envVar] = cliToken;
-      }
+    // Priority 2: Environment variable
+    const envValue = process.env[envVar];
+    if (envValue) {
+      keys[envVar] = envValue;
     }
   }
 

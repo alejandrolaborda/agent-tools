@@ -50,9 +50,13 @@ async function main(): Promise<void> {
   const adapter = new GeminiAdapter();
 
   if (!adapter.isConfigured()) {
-    console.error('Error: GOOGLE_API_KEY environment variable is not set');
+    console.error('Error: Gemini API key not found.');
+    console.error('');
+    console.error('Run /second-opinion setup to configure interactively.');
     process.exit(1);
   }
+
+  console.error(`Gemini auth source: ${adapter.getAuthSource()}`);
 
   const info = adapter.getInfo();
 

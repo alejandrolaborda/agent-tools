@@ -1,6 +1,13 @@
 /**
  * Google Gemini API Adapter
+ *
+ * Authentication priority:
+ * 1. GOOGLE_API_KEY environment variable
+ * 2. Stored in .claude/second-opinion.json
  */
+
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 export interface QueryParams {
   query: string;
@@ -37,6 +44,10 @@ interface GeminiResponse {
   };
 }
 
+interface LocalConfig {
+  apiKeys?: Record<string, string>;
+}
+
 // Recommended models for second opinions
 const AVAILABLE_MODELS: ModelInfo[] = [
   { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Fast and capable, good balance' },
@@ -45,14 +56,54 @@ const AVAILABLE_MODELS: ModelInfo[] = [
   { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', description: 'Fast and cost-effective' },
 ];
 
+/**
+ * Try to read API key from local config file
+ */
+function getKeyFromLocalConfig(): string | null {
+  const configPaths = [
+    join(process.cwd(), '.claude', 'second-opinion.json'),
+    join(process.env.HOME ?? '', '.claude', 'second-opinion.json'),
+  ];
+
+  for (const configPath of configPaths) {
+    if (existsSync(configPath)) {
+      try {
+        const content = readFileSync(configPath, 'utf-8');
+        const config = JSON.parse(content) as LocalConfig;
+        if (config.apiKeys?.gemini) {
+          return config.apiKeys.gemini;
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+  }
+  return null;
+}
+
 export class GeminiAdapter {
   private apiKey: string;
   private endpoint: string;
   private defaultModel: string;
   private timeout: number;
+  private authSource: 'env' | 'config' | 'none';
 
   constructor() {
-    this.apiKey = process.env.GOOGLE_API_KEY ?? '';
+    // Resolve API key from multiple sources
+    if (process.env.GOOGLE_API_KEY) {
+      this.apiKey = process.env.GOOGLE_API_KEY;
+      this.authSource = 'env';
+    } else {
+      const configKey = getKeyFromLocalConfig();
+      if (configKey) {
+        this.apiKey = configKey;
+        this.authSource = 'config';
+      } else {
+        this.apiKey = '';
+        this.authSource = 'none';
+      }
+    }
+
     this.endpoint = process.env.GEMINI_ENDPOINT ?? 'https://generativelanguage.googleapis.com/v1beta';
     this.defaultModel = 'gemini-2.0-flash';
     this.timeout = parseInt(process.env.GEMINI_TIMEOUT ?? '60000', 10);
@@ -60,6 +111,10 @@ export class GeminiAdapter {
 
   isConfigured(): boolean {
     return !!this.apiKey;
+  }
+
+  getAuthSource(): string {
+    return this.authSource;
   }
 
   getInfo(): { provider: string; model: string } {
