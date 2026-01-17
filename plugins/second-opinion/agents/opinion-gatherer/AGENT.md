@@ -48,7 +48,7 @@ Output:
 For EACH available agent, output progress and call the tool:
 
 ```
-   ├─ Asking OpenAI GPT-4...
+   ├─ Asking OpenAI...
 ```
 Then call `mcp__openai__agent_query` with:
 ```json
@@ -59,10 +59,12 @@ Then call `mcp__openai__agent_query` with:
 }
 ```
 
+The response JSON includes `model` field with the actual model used (e.g., "gpt-4o", "gemini-2.0-flash").
+
 Repeat for each available agent:
 ```
-   ├─ Asking Google Gemini...
-   └─ Asking GitHub Copilot...
+   ├─ Asking Gemini...
+   └─ Asking GitHub...
 ```
 
 ### Step 4: Show Analysis Message
@@ -74,17 +76,17 @@ After collecting all responses:
 
 ### Step 5: Return Aggregated Results
 
-Return a structured response:
+Return a structured response with actual model names from the JSON responses:
 ```
 ## Responses Collected
 
-### OpenAI
+### OpenAI (gpt-4o)
 [response or error]
 
-### Gemini
+### Gemini (gemini-2.0-flash)
 [response or error]
 
-### GitHub
+### GitHub (copilot)
 [response or error]
 
 ## Claude's Original Proposal
@@ -93,6 +95,8 @@ Return a structured response:
 ## Agent Count
 X agents responded successfully
 ```
+
+**Note:** Model names come from the `model` field in each agent's JSON response, not hardcoded.
 
 The parent skill will interpret this and make the final decision.
 

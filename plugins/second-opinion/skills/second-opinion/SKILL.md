@@ -54,10 +54,10 @@ If agents ARE installed, spawn the `opinion-gatherer` agent with:
 The agent will:
 1. Output "🔍 Gathering second opinions..."
 2. Query each available agent sequentially, showing progress:
-   - "   ├─ Asking OpenAI GPT-4..."
-   - "   ├─ Asking Google Gemini..."
-   - "   └─ Asking GitHub Copilot..."
-3. Return aggregated results
+   - "   ├─ Asking OpenAI..."
+   - "   ├─ Asking Gemini..."
+   - "   └─ Asking GitHub..."
+3. Return aggregated results (including actual model names from responses)
 
 ### Step 3: Analyze and Decide
 
