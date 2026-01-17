@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "second-opinion": {
+      "command": "node",
+      "args": ["${PLUGIN_PATH}/mcp/dist/index.js"],
+      "env": {
+        "SECOND_OPINION_HOST": "claude-code"
+      }
+    }
+  }
+}

@@ -6,7 +6,7 @@ MCP orchestrator that spawns and queries external AI agent MCPs for second opini
 
 1. **Install the orchestrator:**
    ```bash
-   cd plugins/second-opinion/mcp && npm install && npm run build
+   cd plugins/second-opinion/orchestrator/mcp && npm install && npm run build
    ```
 
 2. **Add to your MCP config** (`.mcp.json`):
@@ -97,13 +97,13 @@ Before using, build the agent MCPs you want to enable:
 
 ```bash
 # Build agent MCPs (only for agents you want to use)
-cd plugins/agent-openai/mcp && npm install && npm run build
-cd plugins/agent-gemini/mcp && npm install && npm run build
-cd plugins/agent-github/mcp && npm install && npm run build
-cd plugins/agent-anthropic/mcp && npm install && npm run build  # optional
+cd plugins/second-opinion/agent-openai/mcp && npm install && npm run build
+cd plugins/second-opinion/agent-gemini/mcp && npm install && npm run build
+cd plugins/second-opinion/agent-github/mcp && npm install && npm run build
+cd plugins/second-opinion/agent-anthropic/mcp && npm install && npm run build  # optional
 
 # Build orchestrator
-cd plugins/second-opinion/mcp && npm install && npm run build
+cd plugins/second-opinion/orchestrator/mcp && npm install && npm run build
 ```
 
 ## Behavior
