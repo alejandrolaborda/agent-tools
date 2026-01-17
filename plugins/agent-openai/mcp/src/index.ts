@@ -9,6 +9,16 @@ import {
 
 import { OpenAIAdapter, QueryParams } from './adapter.js';
 
+const LIST_MODELS_TOOL = {
+  name: 'list_models',
+  description: 'List available OpenAI models for second opinions',
+  inputSchema: {
+    type: 'object' as const,
+    properties: {},
+    required: [],
+  },
+};
+
 const AGENT_QUERY_TOOL = {
   name: 'agent_query',
   description: 'Query the OpenAI agent with a question and optional context',
@@ -26,6 +36,10 @@ const AGENT_QUERY_TOOL = {
       systemPrompt: {
         type: 'string',
         description: 'System prompt to guide the response',
+      },
+      model: {
+        type: 'string',
+        description: 'Model to use (optional, defaults to gpt-4o). Use list_models to see available options.',
       },
     },
     required: ['query', 'systemPrompt'],
@@ -55,12 +69,31 @@ async function main(): Promise<void> {
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: [AGENT_QUERY_TOOL],
+    tools: [LIST_MODELS_TOOL, AGENT_QUERY_TOOL],
   }));
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    if (request.params.name !== 'agent_query') {
-      throw new Error(`Unknown tool: ${request.params.name}`);
+    const { name } = request.params;
+
+    if (name === 'list_models') {
+      const models = adapter.getAvailableModels();
+      const defaultModel = adapter.getDefaultModel();
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify({
+              provider: 'openai',
+              models,
+              default: defaultModel,
+            }),
+          },
+        ],
+      };
+    }
+
+    if (name !== 'agent_query') {
+      throw new Error(`Unknown tool: ${name}`);
     }
 
     const args = request.params.arguments as unknown as QueryParams;
@@ -99,7 +132,7 @@ async function main(): Promise<void> {
               response: result.response,
               tokensUsed: result.tokensUsed,
               provider: info.provider,
-              model: info.model,
+              model: result.model,
             }),
           },
         ],
@@ -113,7 +146,7 @@ async function main(): Promise<void> {
             text: JSON.stringify({
               error,
               provider: info.provider,
-              model: info.model,
+              model: args.model ?? adapter.getDefaultModel(),
             }),
           },
         ],

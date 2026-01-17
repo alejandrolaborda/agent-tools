@@ -6,11 +6,19 @@ export interface QueryParams {
   query: string;
   context?: string;
   systemPrompt: string;
+  model?: string;
 }
 
 export interface QueryResult {
   response: string;
   tokensUsed?: number;
+  model: string;
+}
+
+export interface ModelInfo {
+  id: string;
+  name: string;
+  description: string;
 }
 
 interface OpenAIMessage {
@@ -29,17 +37,26 @@ interface OpenAIResponse {
   };
 }
 
+// Recommended models for second opinions
+const AVAILABLE_MODELS: ModelInfo[] = [
+  { id: 'gpt-4o', name: 'GPT-4o', description: 'Most capable, best for complex reasoning' },
+  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'Fast and cost-effective' },
+  { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', description: 'Previous generation, still powerful' },
+  { id: 'o1', name: 'o1', description: 'Advanced reasoning model' },
+  { id: 'o1-mini', name: 'o1 Mini', description: 'Faster reasoning model' },
+];
+
 export class OpenAIAdapter {
   private apiKey: string;
   private endpoint: string;
-  private model: string;
+  private defaultModel: string;
   private timeout: number;
 
   constructor() {
     this.apiKey = process.env.OPENAI_API_KEY ?? '';
     this.endpoint = process.env.OPENAI_ENDPOINT ?? 'https://api.openai.com/v1';
-    this.model = process.env.OPENAI_MODEL ?? 'gpt-4o';
-    this.timeout = parseInt(process.env.OPENAI_TIMEOUT ?? '30000', 10);
+    this.defaultModel = 'gpt-4o';
+    this.timeout = parseInt(process.env.OPENAI_TIMEOUT ?? '60000', 10);
   }
 
   isConfigured(): boolean {
@@ -49,11 +66,21 @@ export class OpenAIAdapter {
   getInfo(): { provider: string; model: string } {
     return {
       provider: 'openai',
-      model: this.model,
+      model: this.defaultModel,
     };
   }
 
+  getAvailableModels(): ModelInfo[] {
+    return AVAILABLE_MODELS;
+  }
+
+  getDefaultModel(): string {
+    return this.defaultModel;
+  }
+
   async query(params: QueryParams): Promise<QueryResult> {
+    const model = params.model ?? this.defaultModel;
+
     const messages: OpenAIMessage[] = [
       { role: 'system', content: params.systemPrompt },
     ];
@@ -73,7 +100,7 @@ export class OpenAIAdapter {
           'Authorization': `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          model: this.model,
+          model,
           messages,
           max_tokens: 1000,
           temperature: 0.7,
@@ -91,6 +118,7 @@ export class OpenAIAdapter {
     return {
       response: data.choices[0]?.message?.content ?? '',
       tokensUsed: data.usage?.total_tokens,
+      model,
     };
   }
 

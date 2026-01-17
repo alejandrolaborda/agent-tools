@@ -15,18 +15,17 @@ You receive:
 - `query`: The question to ask other AI agents
 - `context`: Code or additional context (optional)
 - `myProposal`: Claude's own answer/proposal to compare against
+- `modelConfig`: (optional) Object with agent-to-model mappings, e.g. `{"openai": "gpt-4o", "gemini": "gemini-1.5-pro"}`
 
-## Available Agent MCPs
+## Available Agent MCP Tools
 
-These are the possible agent MCP tools (if the plugin is installed):
+| Agent | Query Tool | List Models Tool |
+|-------|------------|------------------|
+| OpenAI | `mcp__openai__agent_query` | `mcp__openai__list_models` |
+| Gemini | `mcp__gemini__agent_query` | `mcp__gemini__list_models` |
+| GitHub | `mcp__github__agent_query` | `mcp__github__list_models` |
 
-| Agent | MCP Tool | Env Var Required |
-|-------|----------|------------------|
-| OpenAI | `mcp__openai__agent_query` | `OPENAI_API_KEY` |
-| Gemini | `mcp__gemini__agent_query` | `GOOGLE_API_KEY` |
-| GitHub | `mcp__github__agent_query` | `GITHUB_TOKEN` |
-
-**Note:** `mcp__anthropic__agent_query` is excluded when running in Claude Code.
+**Note:** `mcp__anthropic__*` is excluded when running in Claude Code.
 
 ## Execution Flow
 
@@ -55,11 +54,12 @@ Then call `mcp__openai__agent_query` with:
 {
   "query": "<the query>",
   "context": "<context>",
-  "systemPrompt": "You are a coding assistant providing a second opinion. Be concise and actionable."
+  "systemPrompt": "You are a coding assistant providing a second opinion. Be concise and actionable.",
+  "model": "<from modelConfig or use default>"
 }
 ```
 
-The response JSON includes `model` field with the actual model used (e.g., "gpt-4o", "gemini-2.0-flash").
+The response JSON includes `model` field with the actual model used.
 
 Repeat for each available agent:
 ```
@@ -86,7 +86,7 @@ Return a structured response with actual model names from the JSON responses:
 ### Gemini (gemini-2.0-flash)
 [response or error]
 
-### GitHub (copilot)
+### GitHub (gpt-4o)
 [response or error]
 
 ## Claude's Original Proposal
@@ -96,7 +96,7 @@ Return a structured response with actual model names from the JSON responses:
 X agents responded successfully
 ```
 
-**Note:** Model names come from the `model` field in each agent's JSON response, not hardcoded.
+**Note:** Model names come from the `model` field in each agent's JSON response.
 
 The parent skill will interpret this and make the final decision.
 

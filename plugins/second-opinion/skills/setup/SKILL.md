@@ -14,143 +14,117 @@ Interactive configuration for second-opinion agents. The user should NEVER need 
 
 Follow these steps exactly:
 
-### Step 1: Show Current Status
+### Step 1: Detect Available Agent Plugins
 
-First, check if `.claude/second-opinion.json` exists and show current configuration:
+Check which agent MCP tools are available by looking for these tools:
+- `mcp__openai__list_models` → OpenAI plugin installed
+- `mcp__gemini__list_models` → Gemini plugin installed
+- `mcp__github__list_models` → GitHub plugin installed
 
+Show what's detected:
 ```
-## Current Configuration
+## Detected Agent Plugins
 
-Config file: .claude/second-opinion.json
-Status: [exists | not configured]
-Enabled agents: [list or "none"]
+| Agent | Plugin | Status |
+|-------|--------|--------|
+| OpenAI | agent-openai | ✓ installed / ✗ not found |
+| Gemini | agent-gemini | ✓ installed / ✗ not found |
+| GitHub | agent-github | ✓ installed / ✗ not found |
 ```
 
-### Step 2: Ask User to Select Agents
+If NO plugins are detected, tell user to install at least one:
+```
+⚠️ No agent plugins detected.
 
-Use AskUserQuestion with multiSelect=true:
+Install at least one:
+/plugin install agent-openai@agent-tools
+/plugin install agent-gemini@agent-tools
+/plugin install agent-github@agent-tools
+```
 
+### Step 2: Query Available Models
+
+For each detected agent plugin, call its `list_models` tool:
+- `mcp__openai__list_models`
+- `mcp__gemini__list_models`
+- `mcp__github__list_models`
+
+Each returns JSON with:
 ```json
 {
-  "questions": [{
-    "question": "Which AI agents do you want to enable for second opinions?",
-    "header": "Agents",
-    "multiSelect": true,
-    "options": [
-      {
-        "label": "OpenAI (GPT-4o)",
-        "description": "Requires OpenAI API key"
-      },
-      {
-        "label": "Google Gemini",
-        "description": "Requires Google AI API key"
-      },
-      {
-        "label": "GitHub Models",
-        "description": "Uses GitHub token (auto-detected from gh CLI if installed)"
-      },
-      {
-        "label": "Anthropic (Claude)",
-        "description": "Requires Anthropic API key. Note: Excluded when running in Claude Code"
-      }
-    ]
-  }]
+  "provider": "openai",
+  "models": [
+    {"id": "gpt-4o", "name": "GPT-4o", "description": "Most capable"},
+    {"id": "gpt-4o-mini", "name": "GPT-4o Mini", "description": "Fast and cheap"}
+  ],
+  "default": "gpt-4o"
 }
 ```
 
-### Step 3: Check for Existing Keys & Auto-Detect GitHub Token
+### Step 3: Let User Select Models
 
-After user selects agents, for each selected agent:
-
-1. **For GitHub**: Run `gh auth token` to check if a token is available
-   - If available, note that it will be auto-detected (no input needed)
-   - If not available, mark as needing manual input
-
-2. **For others**: Check if key already exists in `.claude/second-opinion.json`
-   - If exists, note it's already configured
-   - If missing, mark as needing input
-
-### Step 4: Prompt for Missing API Keys
-
-For each selected agent that needs an API key, use AskUserQuestion to prompt:
+For each available agent, use AskUserQuestion to let user pick a model:
 
 ```json
 {
   "questions": [{
-    "question": "Please paste your OpenAI API key (starts with sk-):",
-    "header": "OpenAI Key",
+    "question": "Which OpenAI model do you want to use?",
+    "header": "OpenAI",
     "multiSelect": false,
     "options": [
-      {
-        "label": "Enter key now",
-        "description": "Paste your API key when prompted"
-      },
-      {
-        "label": "Skip for now",
-        "description": "Configure later"
-      }
+      {"label": "GPT-4o (Recommended)", "description": "Most capable, best for complex reasoning"},
+      {"label": "GPT-4o Mini", "description": "Fast and cost-effective"},
+      {"label": "o1", "description": "Advanced reasoning model"}
     ]
   }]
 }
 ```
 
-If user selects "Enter key now", they will type in "Other" - that's the API key.
-If user selects "Skip for now", don't save a key for that agent.
+**Note:** Build the options dynamically from the `list_models` response. Mark the default as "(Recommended)".
 
-**Key format hints to tell the user:**
-- OpenAI: starts with `sk-`
-- Anthropic: starts with `sk-ant-`
-- Google: alphanumeric string
-- GitHub: starts with `ghp_` or `gho_` (unless using gh CLI)
+### Step 4: Save Configuration
 
-### Step 5: Save Configuration
-
-Map user choices to agent IDs:
-- "OpenAI (GPT-4o)" → `openai`
-- "Google Gemini" → `gemini`
-- "GitHub Models" → `github`
-- "Anthropic (Claude)" → `anthropic`
-
-Create the `.claude` directory if needed, then write to `.claude/second-opinion.json`:
+Create `.claude/second-opinion.json` with the selected models:
 
 ```json
 {
-  "enabledAgents": ["openai", "gemini", "github"],
-  "apiKeys": {
-    "openai": "sk-...",
-    "gemini": "AI..."
+  "models": {
+    "openai": "gpt-4o",
+    "gemini": "gemini-2.0-flash",
+    "github": "gpt-4o"
   },
   "updatedAt": "2026-01-16T12:00:00Z"
 }
 ```
 
-**Important**: GitHub keys are NOT stored if auto-detected from `gh auth token`.
-
-### Step 6: Show Confirmation
+### Step 5: Show Confirmation
 
 ```
 ## Configuration Saved
 
 **File:** .claude/second-opinion.json
 
-### Enabled Agents
+### Selected Models
 
-- openai: ✓ configured
-- gemini: ✓ configured
-- github: ✓ auto-detected from gh CLI
+| Agent | Model |
+|-------|-------|
+| OpenAI | gpt-4o |
+| Gemini | gemini-2.0-flash |
+| GitHub | gpt-4o |
 
 ### Note
 
-- Make sure .claude/ is in your .gitignore to protect API keys
-- GitHub token is auto-detected from `gh auth token` - no key stored
-- To change agents, run `/second-opinion setup` again
+- Models can be changed anytime by running `/second-opinion setup`
+- API keys are read from environment variables (set in your shell profile)
+- GitHub token auto-detected from `gh auth token` if available
 ```
 
 ## Important Notes
 
 - NEVER ask user to edit files manually
+- NEVER hardcode model lists - always query from `list_models` tool
 - Use AskUserQuestion for ALL user input
-- Auto-detect GitHub token from `gh auth token` when possible
-- Store keys in `.claude/second-opinion.json` (user doesn't touch this)
-- Remind user to add `.claude/` to `.gitignore`
-- Anthropic agent is auto-excluded when `SECOND_OPINION_HOST=claude-code`
+- Build model options dynamically from what each agent reports
+- Mark the default model as "(Recommended)" in the options
+- Store only model selections (not API keys) in the config file
+- API keys come from environment variables, not stored in config

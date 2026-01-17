@@ -6,11 +6,19 @@ export interface QueryParams {
   query: string;
   context?: string;
   systemPrompt: string;
+  model?: string;
 }
 
 export interface QueryResult {
   response: string;
   tokensUsed?: number;
+  model: string;
+}
+
+export interface ModelInfo {
+  id: string;
+  name: string;
+  description: string;
 }
 
 interface GeminiContent {
@@ -29,17 +37,25 @@ interface GeminiResponse {
   };
 }
 
+// Recommended models for second opinions
+const AVAILABLE_MODELS: ModelInfo[] = [
+  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Fast and capable, good balance' },
+  { id: 'gemini-2.0-flash-thinking-exp', name: 'Gemini 2.0 Flash Thinking', description: 'Enhanced reasoning capabilities' },
+  { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', description: 'Most capable, best for complex tasks' },
+  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', description: 'Fast and cost-effective' },
+];
+
 export class GeminiAdapter {
   private apiKey: string;
   private endpoint: string;
-  private model: string;
+  private defaultModel: string;
   private timeout: number;
 
   constructor() {
     this.apiKey = process.env.GOOGLE_API_KEY ?? '';
     this.endpoint = process.env.GEMINI_ENDPOINT ?? 'https://generativelanguage.googleapis.com/v1beta';
-    this.model = process.env.GEMINI_MODEL ?? 'gemini-2.0-flash';
-    this.timeout = parseInt(process.env.GEMINI_TIMEOUT ?? '30000', 10);
+    this.defaultModel = 'gemini-2.0-flash';
+    this.timeout = parseInt(process.env.GEMINI_TIMEOUT ?? '60000', 10);
   }
 
   isConfigured(): boolean {
@@ -49,11 +65,21 @@ export class GeminiAdapter {
   getInfo(): { provider: string; model: string } {
     return {
       provider: 'google',
-      model: this.model,
+      model: this.defaultModel,
     };
   }
 
+  getAvailableModels(): ModelInfo[] {
+    return AVAILABLE_MODELS;
+  }
+
+  getDefaultModel(): string {
+    return this.defaultModel;
+  }
+
   async query(params: QueryParams): Promise<QueryResult> {
+    const model = params.model ?? this.defaultModel;
+
     let userContent = params.query;
     if (params.context) {
       userContent += `\n\nContext:\n${params.context}`;
@@ -64,7 +90,7 @@ export class GeminiAdapter {
     ];
 
     const response = await this.fetchWithTimeout(
-      `${this.endpoint}/models/${this.model}:generateContent?key=${this.apiKey}`,
+      `${this.endpoint}/models/${model}:generateContent?key=${this.apiKey}`,
       {
         method: 'POST',
         headers: {
@@ -95,6 +121,7 @@ export class GeminiAdapter {
     return {
       response: text,
       tokensUsed: data.usageMetadata?.totalTokenCount,
+      model,
     };
   }
 
