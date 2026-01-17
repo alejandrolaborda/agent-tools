@@ -1,0 +1,10 @@
+{
+  "name": "second-opinion",
+  "version": "1.6.1",
+  "description": "Get second opinions from external AI agents (OpenAI, Gemini, GitHub). Orchestrates multiple AI providers for consensus-based decision making.",
+  "author": {
+    "name": "Alejandro Laborda"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["mcp", "second-opinion", "multi-agent", "consensus", "orchestrator", "ai"]
+}
