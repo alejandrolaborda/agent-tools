@@ -1,0 +1,13 @@
+{
+  "second-opinion": {
+    "command": "node",
+    "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/dist/index.js"],
+    "env": {
+      "SECOND_OPINION_HOST": "claude-code",
+      "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+      "GOOGLE_API_KEY": "${GOOGLE_API_KEY}",
+      "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+      "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+    }
+  }
+}

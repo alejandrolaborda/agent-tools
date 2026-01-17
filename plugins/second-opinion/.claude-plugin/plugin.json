@@ -1,6 +1,6 @@
 {
   "name": "second-opinion",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "MCP orchestrator that spawns and queries external AI agent MCPs for second opinions. Features interactive setup with GitHub CLI auto-detection, stored API keys, and automatic host exclusion.",
   "author": {
     "name": "Alejandro Laborda"
