@@ -1,0 +1,10 @@
+{
+  "name": "agent-anthropic",
+  "version": "1.0.0",
+  "description": "MCP server that exposes Anthropic Claude as an agent for second opinions",
+  "author": {
+    "name": "Alejandro Laborda"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["mcp", "anthropic", "claude", "agent", "ai"]
+}

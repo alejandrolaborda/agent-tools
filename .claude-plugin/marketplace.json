@@ -1,6 +1,6 @@
 {
   "name": "agent-tools",
-  "description": "AI development plugins for Apple platforms",
+  "description": "AI development plugins and multi-agent tools",
   "owner": {
     "name": "Alejandro Laborda"
   },
@@ -14,6 +14,31 @@
       "name": "apple-tv-dev",
       "source": "./plugins/apple-tv-dev",
       "description": "Apple TV/tvOS development with specialized agents. Requires: apple-shared"
+    },
+    {
+      "name": "agent-openai",
+      "source": "./plugins/agent-openai",
+      "description": "MCP server exposing OpenAI as an agent for second opinions"
+    },
+    {
+      "name": "agent-anthropic",
+      "source": "./plugins/agent-anthropic",
+      "description": "MCP server exposing Anthropic Claude as an agent for second opinions"
+    },
+    {
+      "name": "agent-gemini",
+      "source": "./plugins/agent-gemini",
+      "description": "MCP server exposing Google Gemini as an agent for second opinions"
+    },
+    {
+      "name": "agent-github",
+      "source": "./plugins/agent-github",
+      "description": "MCP server exposing GitHub Models as an agent for second opinions"
+    },
+    {
+      "name": "second-opinion",
+      "source": "./plugins/second-opinion",
+      "description": "MCP orchestrator for querying multiple AI agents with consensus detection"
     }
   ]
 }

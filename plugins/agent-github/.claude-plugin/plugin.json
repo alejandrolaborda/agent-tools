@@ -1,0 +1,10 @@
+{
+  "name": "agent-github",
+  "version": "1.0.0",
+  "description": "MCP server that exposes GitHub Models as an agent for second opinions",
+  "author": {
+    "name": "Alejandro Laborda"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["mcp", "github", "copilot", "agent", "ai"]
+}

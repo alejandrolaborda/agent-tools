@@ -1,0 +1,10 @@
+{
+  "name": "agent-openai",
+  "version": "1.0.0",
+  "description": "MCP server that exposes OpenAI as an agent for second opinions",
+  "author": {
+    "name": "Alejandro Laborda"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["mcp", "openai", "agent", "ai"]
+}

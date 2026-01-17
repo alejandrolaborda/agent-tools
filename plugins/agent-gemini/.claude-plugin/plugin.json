@@ -1,0 +1,10 @@
+{
+  "name": "agent-gemini",
+  "version": "1.0.0",
+  "description": "MCP server that exposes Google Gemini as an agent for second opinions",
+  "author": {
+    "name": "Alejandro Laborda"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["mcp", "google", "gemini", "agent", "ai"]
+}
