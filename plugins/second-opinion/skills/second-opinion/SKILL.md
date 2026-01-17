@@ -15,32 +15,78 @@ Query external agents, get answer, act on it.
 | `/second-opinion setup` | Configure which agents to enable |
 | `/second-opinion status` | Show current configuration |
 
-## Behavior
+## CRITICAL: Execution Flow
+
+### Step 1: Check for Installed Agent Plugins
+
+**FIRST**, check if any agent MCP tools are available. Look for these tools:
+
+| Tool | Agent Plugin |
+|------|--------------|
+| `mcp__openai__agent_query` | agent-openai |
+| `mcp__gemini__agent_query` | agent-gemini |
+| `mcp__github__agent_query` | agent-github |
+
+**Note:** `mcp__anthropic__agent_query` is excluded when running in Claude Code.
+
+If **NONE** of these tools exist, display this message and **STOP immediately**:
+
+```
+⚠️ No second-opinion agents installed.
+
+Install at least one agent plugin:
+• agent-openai (requires OPENAI_API_KEY)
+• agent-gemini (requires GOOGLE_API_KEY)
+• agent-github (requires GITHUB_TOKEN)
+
+Run `/second-opinion setup` for help.
+```
+
+**Do NOT proceed further if no agents are available.**
+
+### Step 2: Gather Opinions (use opinion-gatherer agent)
+
+If agents ARE installed, spawn the `opinion-gatherer` agent with:
+- The user's query/question
+- Your own proposal/answer to the question
+- Any relevant context
+
+The agent will:
+1. Output "🔍 Gathering second opinions..."
+2. Query each available agent sequentially, showing progress:
+   - "   ├─ Asking OpenAI GPT-4..."
+   - "   ├─ Asking Google Gemini..."
+   - "   └─ Asking GitHub Copilot..."
+3. Return aggregated results
+
+### Step 3: Analyze and Decide
+
+After receiving responses from the opinion-gatherer agent, display:
+
+```
+📊 Analyzing responses against my proposal...
+```
+
+Then apply this decision logic:
 
 | Situation | Action |
 |-----------|--------|
-| Consensus | Proceed silently |
-| No consensus, decidable | Decide best option, proceed |
+| Consensus with your proposal | Proceed with your proposal |
+| Consensus against your proposal | Adopt the consensus approach |
+| No consensus, decidable | Pick best option, explain briefly |
 | No consensus, critical | Ask user (rare) |
 
+## Output Guidelines
+
 **Do NOT:**
-- Attribute opinions to specific agents
-- Show verbose breakdowns
-- Summarize what each agent said
+- Attribute opinions to specific agents by name
+- Show verbose breakdowns of each response
+- Summarize what each agent said individually
 
 **DO:**
 - Return actionable next step
 - Keep it brief
 - Only ask user when truly stuck
-
-## Usage
-
-```json
-{
-  "query": "Is this the right approach for handling auth?",
-  "context": "<code or description>"
-}
-```
 
 ## Output Examples
 
@@ -66,9 +112,13 @@ Need your input on this one:
 
 ## First-Time Setup
 
-If no agents are configured, run `/second-opinion setup` to:
-1. Select which AI agents to enable (interactive)
-2. Paste API keys when prompted (stored automatically)
-3. GitHub token auto-detected from `gh auth token` if installed
+Install agent plugins to enable second opinions:
 
-**No file editing required** - everything is configured interactively.
+```bash
+# Install from agent-tools marketplace
+/plugin install agent-openai@agent-tools
+/plugin install agent-gemini@agent-tools
+/plugin install agent-github@agent-tools
+```
+
+Each plugin requires its API key as an environment variable.
