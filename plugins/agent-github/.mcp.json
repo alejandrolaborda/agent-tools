@@ -1,0 +1,9 @@
+{
+  "github-models": {
+    "command": "node",
+    "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/dist/index.js"],
+    "env": {
+      "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+    }
+  }
+}

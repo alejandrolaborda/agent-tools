@@ -1,0 +1,9 @@
+{
+  "anthropic": {
+    "command": "node",
+    "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/dist/index.js"],
+    "env": {
+      "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
+    }
+  }
+}

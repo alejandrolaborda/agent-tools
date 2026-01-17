@@ -1,6 +1,6 @@
 {
   "name": "agent-github",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "MCP server that exposes GitHub Models as an agent for second opinions",
   "author": {
     "name": "Alejandro Laborda"

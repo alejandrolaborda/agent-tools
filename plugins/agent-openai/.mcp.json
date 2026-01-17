@@ -1,0 +1,9 @@
+{
+  "openai": {
+    "command": "node",
+    "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/dist/index.js"],
+    "env": {
+      "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+    }
+  }
+}

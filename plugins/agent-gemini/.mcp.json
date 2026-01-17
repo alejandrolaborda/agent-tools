@@ -1,0 +1,9 @@
+{
+  "gemini": {
+    "command": "node",
+    "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/dist/index.js"],
+    "env": {
+      "GOOGLE_API_KEY": "${GOOGLE_API_KEY}"
+    }
+  }
+}
